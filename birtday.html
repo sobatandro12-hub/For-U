@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday Angelica 🎁</title>
+    <style>
+        :root {
+            --pink-light: #FFF0F5;
+            --pink-accent: #FFB6C1;
+            --pink-deep: #FF69B4;
+            --white: #FFFFFF;
+            --gold: #FFD700;
+            --gold-dark: #DAA520;
+            --text-color: #4A4A4A;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--pink-light);
+            color: var(--text-color);
+        }
+
+        /* Canvas Utama untuk Efek Visual */
+        #canvas-ambient, #canvas-interactive {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        #canvas-interactive {
+            pointer-events: auto;
+            z-index: 2;
+        }
+
+        /* Container Utama */
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        /* Kardus Halaman Login / Gerbang */
+        .card-gate {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            padding: 40px 30px;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(255, 182, 193, 0.4), 0 0 0 4px rgba(255, 215, 0, 0.3);
+            text-align: center;
+            max-width: 420px;
+            width: 90%;
+            border: 2px solid var(--white);
+            transform: scale(1);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: floating 4s ease-in-out infinite;
+        }
+
+        .card-gate.hide {
+            opacity: 0;
+            transform: scale(0.8) translateY(-50px);
+            pointer-events: none;
+        }
+
+        .card-gate h2 {
+            font-size: 1.4rem;
+            color: var(--pink-deep);
+            margin-bottom: 25px;
+            line-height: 1.5;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid var(--pink-accent);
+            border-radius: 50px;
+            outline: none;
+            font-size: 1.1rem;
+            text-align: center;
+            color: #333;
+            background-color: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .input-group input:focus {
+            border-color: var(--pink-deep);
+            box-shadow: 0 0 10px rgba(255, 105, 180, 0.3), inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--pink-accent), var(--pink-deep));
+            color: white;
+            border: none;
+            padding: 14px 35px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(255, 105, 180, 0.6);
+        }
+
+        .btn-submit:active {
+            transform: translateY(1px);
+        }
+
+        .error-message {
+            color: #D32F2F;
+            font-size: 0.95rem;
+            margin-top: 15px;
+            min-height: 22px;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .error-message.show {
+            opacity: 1;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        /* Konten Utama Website */
+        .main-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.5s ease-in-out;
+            padding: 20px;
+            z-index: 5;
+        }
+
+        .main-content.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Kardus Surat / Ucapan */
+        .card-wish {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 24px;
+            padding: 35px 25px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 85vh;
+            box-shadow: 0 20px 50px rgba(255, 182, 193, 0.4), 0 0 0 5px rgba(255, 215, 0, 0.2);
+            border: 3px solid var(--white);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            transform: translateY(30px);
+            transition: transform 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .main-content.show .card-wish {
+            transform: translateY(0);
+        }
+
+        /* Dekorasi Berputar dan Mengambang */
+        .decorations-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 20px;
+            position: relative;
+            width: 100%;
+        }
+
+        .decor-item {
+            font-size: 3.2rem;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+            display: inline-block;
+        }
+
+        .decor-bear {
+            animation: spin-slow 8s linear infinite, floating 3s ease-in-out infinite alternate;
+        }
+
+        .decor-cake {
+            animation: spin-reverse 9s linear infinite, floating 3.5s ease-in-out infinite alternate-reverse;
+        }
+
+        /* Teks Pesan Berkala */
+        .message-box {
+            width: 100%;
+            overflow-y: auto;
+            flex-grow: 1;
+            margin-bottom: 25px;
+            padding-right: 10px;
+            text-align: center;
+            scrollbar-width: thin;
+            scrollbar-color: var(--pink-accent) transparent;
+        }
+
+        .message-box::-webkit-scrollbar {
+            width: 6px;
+        }
+        .message-box::-webkit-scrollbar-thumb {
+            background-color: var(--pink-accent);
+            border-radius: 10px;
+        }
+
+        .wish-title {
+            font-size: 1.6rem;
+            color: var(--pink-deep);
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 3px rgba(255, 105, 180, 0.2);
+            font-weight: 700;
+        }
+
+        .wish-text {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: #555;
+            white-space: pre-wrap;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        /* Kursor Typewriter */
+        .typed-cursor {
+            display: inline-block;
+            width: 2px;
+            background-color: var(--pink-deep);
+            margin-left: 2px;
+            animation: blink 0.7s infinite;
+        }
+
+        /* Tombol Akhir */
+        .btn-action-container {
+            width: 100%;
+            text-align: center;
+            min-height: 60px;
+        }
+
+        .btn-love {
+            background: linear-gradient(135deg, #FFD700, #DAA520);
+            color: white;
+            border: none;
+            padding: 14px 45px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(218, 165, 32, 0.4);
+            transition: all 0.3s;
+            opacity: 0;
+            transform: scale(0.8);
+            pointer-events: none;
+        }
+
+        .btn-love.visible {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+            animation: pulse 2s infinite;
+        }
+
+        .btn-love:hover {
+            transform: scale(1.05);
+            box-shadow: 0 7px 22px rgba(218, 165, 32, 0.7);
+        }
+
+        /* Hasil Akhir Pop-up Kecil / Banner */
+        .final-banner {
+            position: absolute;
+            bottom: 25px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 25px;
+            border-radius: 50px;
+            box-shadow: 0 10px 25px rgba(255, 105, 180, 0.3);
+            border: 2px solid var(--gold);
+            color: var(--pink-deep);
+            font-weight: bold;
+            font-size: 1.05rem;
+            text-align: center;
+            max-width: 90%;
+            opacity: 0;
+            transform: translateY(20px) scale(0.9);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 12;
+            pointer-events: none;
+        }
+
+        .final-banner.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* Animasi CSS */
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes spin-slow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes spin-reverse {
+            0% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 215, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+        }
+
+        /* Responsivitas Layar Sederhana */
+        @media (max-width: 480px) {
+            .card-gate h2 { font-size: 1.2rem; }
+            .decor-item { font-size: 2.6rem; }
+            .wish-title { font-size: 1.35rem; }
+            .wish-text { font-size: 0.95rem; line-height: 1.7; }
+            .card-wish { padding: 25px 15px; max-height: 80vh; }
+            .btn-love { padding: 12px 35px; font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas-ambient"></canvas>
+    <canvas id="canvas-interactive"></canvas>
+
+    <div class="container">
+        <div class="card-gate" id="gateCard">
+            <h2>Masukkan nama untuk membuka hadiah ulang tahun 🎁</h2>
+            <div class="input-group">
+                <input type="text" id="nameInput" placeholder="Ketik nama di sini..." autocomplete="off">
+            </div>
+            <button class="btn-submit" id="submitBtn">Buka Kado ✨</button>
+            <div class="error-message" id="errorMsg"></div>
+        </div>
+
+        <div class="main-content" id="mainContent">
+            <div class="card-wish" id="wishCard">
+                <div class="decorations-container">
+                    <span class="decor-item decor-bear">🧸</span>
+                    <span class="decor-item decor-cake">🎂</span>
+                </div>
+
+                <div class="message-box">
+                    <h1 class="wish-title">🎂🎉 Happy Birthday Angelica 🎉🎂</h1>
+                    <span class="wish-text" id="typedContainer"></span><span class="typed-cursor" id="cursor">|</span>
+                </div>
+
+                <div class="btn-action-container">
+                    <button class="btn-love" id="loveBtn">Aku Suka 🎉</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="final-banner" id="finalBanner">
+            Semoga hari ini menjadi salah satu hari terbaik dalam hidup u 💖
+        </div>
+    </div>
+
+    <script>
+        // --- KONFIGURASI GLOBAL ---
+        const gateCard = document.getElementById('gateCard');
+        const mainContent = document.getElementById('mainContent');
+        const nameInput = document.getElementById('nameInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const errorMsg = document.getElementById('errorMsg');
+        const typedContainer = document.getElementById('typedContainer');
+        const loveBtn = document.getElementById('loveBtn');
+        const finalBanner = document.getElementById('finalBanner');
+        const cursor = document.getElementById('cursor');
+
+        const canvasAmbient = document.getElementById('canvas-ambient');
+        const ctxAmbient = canvasAmbient.getContext('2d');
+        const canvasInteractive = document.getElementById('canvas-interactive');
+        const ctxInteractive = canvasInteractive.getContext('2d');
+
+        let width, height;
+        let ambientParticles = [];
+        let interactiveParticles = [];
+        let balloons = [];
+        let isUnlocked = false;
+
+        // Teks Ucapan Ulang Tahun Lengkap
+        const fullMessage = `Hari ini adalah hari spesial untuk seseorang yang spesial juga. 💖\n\nSelamat ulang tahun yaa Angelica. 🥳✨\n\nSemoga di usia yang baru ini u selalu diberikan kesehatan, kebahagiaan, dan umur yang panjang. 🌷\n\nSemoga setiap langkah yang u ambil membawa u semakin dekat dengan impian dan cita-cita yang u inginkan. ✨\n\nSemoga semua ujian yang sedang atau akan u hadapi dimudahkan, diberikan kelancaran, ketenangan, dan hasil yang terbaik. 📚💕\n\nSemoga hari-hari u dipenuhi dengan senyuman, tawa, dan orang-orang yang selalu membawa hal baik untuk hidup u. 🌸\n\nDan semoga cantiknya makin cantik, manisnya makin manis, auranya makin bersinar, dan kebahagiaannya semakin bertambah setiap hari. 💖✨\n\nTerima kasih sudah menjadi pribadi yang kuat dan hebat sampai hari ini.\n\nJangan lupa menikmati hari spesial u, makan yang enak, banyak tersenyum, dan membuat kenangan indah hari ini. 🎂🧸💕\n\nSekali lagi,\n🎉 Happy Birthday Angelica 🎉\n\nSemoga tahun ini menjadi tahun yang penuh kebahagiaan, keberuntungan, kesehatan, dan banyak hal baik yang datang menghampiri u. 💖✨`;
+
+        // --- SISTEM RESIZE CANVAS ---
+        function resizeCanvases() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            
+            canvasAmbient.width = width;
+            canvasAmbient.height = height;
+            canvasInteractive.width = width;
+            canvasInteractive.height = height;
+        }
+        window.addEventListener('resize', resizeCanvases);
+        resizeCanvases();
+
+        // --- MANAJEMEN SOUND/AUDIO (Web Audio API - Happy Birthday Instrumental) ---
+        class BirthdayAudio {
+            constructor() {
+                this.ctx = null;
+                this.notes = [
+                    {f: 261.63, d: 0.4}, {f: 261.63, d: 0.4}, {f: 293.66, d: 0.8}, {f: 261.63, d: 0.8}, {f: 349.23, d: 0.8}, {f: 329.63, d: 1.5},
+                    {f: 261.63, d: 0.4}, {f: 261.63, d: 0.4}, {f: 293.66, d: 0.8}, {f: 261.63, d: 0.8}, {f: 392.00, d: 0.8}, {f: 349.23, d: 1.5},
+                    {f: 261.63, d: 0.4}, {f: 261.63, d: 0.4}, {f: 523.25, d: 0.8}, {f: 440.00, d: 0.8}, {f: 349.23, d: 0.8}, {f: 329.63, d: 0.8}, {f: 293.66, d: 0.8},
+                    {f: 466.16, d: 0.4}, {f: 466.16, d: 0.4}, {f: 440.00, d: 0.8}, {f: 349.23, d: 0.8}, {f: 392.00, d: 0.8}, {f: 349.23, d: 1.5}
+                ];
+                this.currentIndex = 0;
+                this.isPlaying = false;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            playNextNote() {
+                if (!this.isPlaying) return;
+                
+                let note = this.notes[this.currentIndex];
+                let osc = this.ctx.createOscillator();
+                let gainNode = this.ctx.createGain();
+
+                osc.type = 'triangle'; 
+                osc.frequency.setValueAtTime(note.f, this.ctx.currentTime);
+
+                gainNode.gain.setValueAtTime(0, this.ctx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.25, this.ctx.currentTime + 0.05);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + note.d);
+
+                osc.connect(gainNode);
+                gainNode.connect(this.ctx.destination);
+
+                osc.start();
+                osc.stop(this.ctx.currentTime + note.d);
+
+                this.currentIndex = (this.currentIndex + 1) % this.notes.length;
+
+                setTimeout(() => this.playNextNote(), note.d * 950);
+            }
+
+            start() {
+                this.init();
+                if (this.isPlaying) return;
+                this.isPlaying = true;
+                this.currentIndex = 0;
+                this.playNextNote();
+            }
+        }
+        const audioPlayer = new BirthdayAudio();
+
+        // --- SISTEM PROPERTI PARTIKEL & VISUAL (AMBIENT) ---
+        class AmbientParticle {
+            constructor(type) {
+                this.type = type; 
+                this.reset();
+                this.y = Math.random() * height; 
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = -10;
+                this.size = this.type === 'glitter' ? Math.random() * 3 + 1 : Math.random() * 6 + 4;
+                this.speedY = this.type === 'glitter' ? Math.random() * 0.6 + 0.3 : Math.random() * 1.2 + 0.6;
+                this.speedX = Math.random() * 0.4 - 0.2;
+                
+                const colors = ['#FFF0F5', '#FFB6C1', '#FFFFFF', '#FFD700', '#FFE4E1'];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.rotation = Math.random() * Math.PI;
+                this.rotationSpeed = Math.random() * 0.02 - 0.01;
+            }
+
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX + Math.sin(this.y / 30) * 0.2; 
+                this.rotation += this.rotationSpeed;
+
+                if (this.y > height || this.x < 0 || this.x > width) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctxAmbient.save();
+                ctxAmbient.translate(this.x, this.y);
+                ctxAmbient.rotate(this.rotation);
+                ctxAmbient.fillStyle = this.color;
+
+                if (this.type === 'glitter') {
+                    ctxAmbient.beginPath();
+                    for (let i = 0; i < 4; i++) {
+                        ctxAmbient.lineTo(0, -this.size);
+                        ctxAmbient.lineTo(this.size * 0.3, -this.size * 0.3);
+                        ctxAmbient.rotate(Math.PI / 2);
+                    }
+                    ctxAmbient.fill();
+                } else {
+                    ctxAmbient.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+                }
+                ctxAmbient.restore();
+            }
+        }
+
+        class Balloon {
+            constructor() {
+                this.reset();
+                this.y = height + Math.random() * 300; 
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = height + 100;
+                this.radius = Math.random() * 15 + 20; 
+                this.speedY = Math.random() * 0.8 + 0.5;
+                this.wobbleSpeed = Math.random() * 0.02 + 0.01;
+                this.wobbleRange = Math.random() * 20 + 10;
+                this.wobbleToken = Math.random() * 100;
+
+                const colors = [
+                    'rgba(255, 182, 193, 0.7)',  
+                    'rgba(255, 105, 180, 0.65)', 
+                    'rgba(255, 255, 255, 0.85)', 
+                    'rgba(255, 215, 0, 0.6)'     
+                ];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            update() {
+                this.y -= this.speedY;
+                this.wobbleToken += this.wobbleSpeed;
+                this.currentX = this.x + Math.sin(this.wobbleToken) * this.wobbleRange;
+
+                if (this.y < -100) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctxAmbient.save();
+                ctxAmbient.beginPath();
+                
+                ctxAmbient.translate(this.currentX, this.y);
+                ctxAmbient.scale(1, 1.2);
+                ctxAmbient.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctxAmbient.fillStyle = this.color;
+                ctxAmbient.fill();
+                
+                ctxAmbient.scale(1, 1/1.2);
+                ctxAmbient.beginPath();
+                ctxAmbient.moveTo(0, this.radius * 1.2);
+                ctxAmbient.lineTo(-4, this.radius * 1.2 + 6);
+                ctxAmbient.lineTo(4, this.radius * 1.2 + 6);
+                ctxAmbient.closePath();
+                ctxAmbient.fillStyle = this.color;
+                ctxAmbient.fill();
+
+                ctxAmbient.beginPath();
+                ctxAmbient.moveTo(0, this.radius * 1.2 + 6);
+                ctxAmbient.bezierCurveTo(5, this.radius * 1.2 + 20, -5, this.radius * 1.2 + 35, 0, this.radius * 1.2 + 50);
+                ctxAmbient.strokeStyle = 'rgba(150,150,150,0.2)';
+                ctxAmbient.lineWidth = 1.5;
+                ctxAmbient.stroke();
+
+                ctxAmbient.restore();
+            }
+        }
+
+        // --- SISTEM EFEK KLIK & DETONASI CONFETTI/HATI (INTERACTIVE) ---
+        class InteractiveParticle {
+            constructor(x, y, type = 'heart', color = null) {
+                this.x = x;
+                this.y = y;
+                this.type = type; 
+                
+                const angle = Math.random() * Math.PI * 2;
+                const speed = type === 'heart' ? Math.random() * 2 + 1 : Math.random() * 5 + 2;
+                
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.gravity = type === 'heart' ? -0.02 : 0.12; 
+                
+                this.alpha = 1;
+                this.decay = Math.random() * 0.015 + 0.01;
+                this.size = type === 'heart' ? Math.random() * 8 + 10 : Math.random() * 5 + 4;
+
+                if (color) {
+                    this.color = color;
+                } else {
+                    const colors = ['#FF69B4', '#FFB6C1', '#FFD700', '#FF1493', '#FFFFFF'];
+                    this.color = colors[Math.floor(Math.random() * colors.length)];
+                }
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.alpha -= this.decay;
+            }
+
+            draw() {
+                ctxInteractive.save();
+                ctxInteractive.globalAlpha = this.alpha;
+                ctxInteractive.fillStyle = this.color;
+                ctxInteractive.translate(this.x, this.y);
+
+                if (this.type === 'heart') {
+                    ctxInteractive.beginPath();
+                    ctxInteractive.moveTo(0, 0);
+                    ctxInteractive.bezierCurveTo(-this.size / 2, -this.size / 2, -this.size, -this.size / 3, -this.size, 0);
+                    ctxInteractive.bezierCurveTo(-this.size, this.size / 2, -this.size / 3, this.size * 0.8, 0, this.size * 1.3);
+                    ctxInteractive.bezierCurveTo(this.size / 3, this.size * 0.8, this.size, this.size / 2, this.size, 0);
+                    ctxInteractive.bezierCurveTo(this.size, -this.size / 3, this.size / 2, -this.size / 2, 0, 0);
+                    ctxInteractive.closePath();
+                    ctxInteractive.fill();
+                } else {
+                    ctxInteractive.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+                }
+                ctxInteractive.restore();
+            }
+        }
+
+        function initAmbient() {
+            for (let i = 0; i < 40; i++) {
+                ambientParticles.push(new AmbientParticle('glitter'));
+            }
+            for (let i = 0; i < 30; i++) {
+                ambientParticles.push(new AmbientParticle('confetti'));
+            }
+            for (let i = 0; i < 12; i++) {
+                balloons.push(new Balloon());
+            }
+        }
+        initAmbient();
+
+        function animate() {
+            ctxAmbient.clearRect(0, 0, width, height);
+            
+            let gradient = ctxAmbient.createLinearGradient(0, 0, width, height);
+            gradient.addColorStop(0, '#FFF0F5');
+            gradient.addColorStop(0.5, '#FFFFFF');
+            gradient.addColorStop(1, '#FFE4E1');
+            ctxAmbient.fillStyle = gradient;
+            ctxAmbient.fillRect(0, 0, width, height);
+
+            ambientParticles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            balloons.forEach(b => {
+                b.update();
+                b.draw();
+            });
+
+            ctxInteractive.clearRect(0, 0, width, height);
+            for (let i = interactiveParticles.length - 1; i >= 0; i--) {
+                let p = interactiveParticles[i];
+                p.update();
+                if (p.alpha <= 0) {
+                    interactiveParticles.splice(i, 1);
+                } else {
+                    p.draw();
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+        requestAnimationFrame(animate);
+
+        window.addEventListener('click', (e) => {
+            if(e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+            
+            for (let i = 0; i < 8; i++) {
+                interactiveParticles.push(new InteractiveParticle(e.clientX, e.clientY, 'heart'));
+            }
+        });
+
+        let messageIndex = 0;
+        function typeWriter() {
+            if (messageIndex < fullMessage.length) {
+                typedContainer.textContent += fullMessage.charAt(messageIndex);
+                messageIndex++;
+                
+                const msgBox = document.querySelector('.message-box');
+                msgBox.scrollTop = msgBox.scrollHeight;
+
+                setTimeout(typeWriter, 35);
+            } else {
+                cursor.style.display = 'none';
+                loveBtn.classList.add('visible');
+            }
+        }
+
+        function verifyAndLaunch() {
+            const inputName = nameInput.value.trim();
+            
+            if (inputName.toLowerCase() === 'angelica') {
+                errorMsg.classList.remove('show');
+                isUnlocked = true;
+                
+                audioPlayer.start();
+                gateCard.classList.add('hide');
+                
+                setTimeout(() => {
+                    gateCard.style.display = 'none';
+                    mainContent.classList.add('show');
+                    typeWriter();
+                }, 500);
+
+            } else {
+                errorMsg.textContent = "Hmm... sepertinya hadiah ini bukan untukmu 👀";
+                errorMsg.classList.add('show');
+                
+                errorMsg.style.animation = 'none';
+                errorMsg.offsetHeight; 
+                errorMsg.style.animation = null; 
+            }
+        }
+
+        submitBtn.addEventListener('click', verifyAndLaunch);
+        nameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                verifyAndLaunch();
+            }
+        });
+
+        loveBtn.addEventListener('click', (e) => {
+            const rect = loveBtn.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            const confettiColors =
