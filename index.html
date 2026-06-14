@@ -1,2 +1,162 @@
-FALIQ SETIAWAN
-https://onecompiler.com/html/44rve5w7s
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>For Angelica ✨</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI,sans-serif}
+body{background:#05010d;overflow:hidden;color:#fff}
+canvas{position:fixed;inset:0}
+.panel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+width:min(90%,760px);background:rgba(255,255,255,.06);
+backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);
+padding:28px;border-radius:24px;z-index:5}
+h1{color:#ffd700;text-align:center;margin-bottom:12px}
+.center{text-align:center}
+input{width:100%;padding:12px;border-radius:12px;border:none;margin:12px 0}
+button{padding:12px 20px;border:none;border-radius:12px;background:#ffd700;font-weight:bold;cursor:pointer}
+#msg,#end,#troll{display:none}
+#typed{white-space:pre-line;line-height:1.7}
+.big{font-size:120px;text-align:center}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div class="panel" id="login">
+<h1>✨ Pesan Rahasia ✨</h1>
+<div class="center">Masukkan namamu</div>
+<input id="name" placeholder="Nama">
+<div class="center"><button onclick="go()">Buka</button></div>
+<p id="err" class="center" style="display:none;margin-top:10px">Hmm... pesan ini bukan untukmu 👀</p>
+</div>
+
+<div class="panel" id="msg">
+<h1>💜 Untuk Angelica 💜</h1>
+<div id="typed"></div>
+<div class="center"><button id="end" onclick="showTroll()">Aku Sudah Baca ❤️</button></div>
+<div id="troll">
+<div class="big">😂</div>
+<div class="center">WKWKWK bercanda 😆💜<br>Semangat kerja, jangan lupa makan dan minum!</div>
+</div>
+</div>
+
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+function rs(){cv.width=innerWidth;cv.height=innerHeight} rs(); onresize=rs;
+
+const stars=[];
+for(let i=0;i<1000;i++) stars.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,s:Math.random()*1.5+.2});
+
+const parts=[];
+addEventListener('mousemove',e=>{
+ for(let i=0;i<2;i++) parts.push({x:e.clientX,y:e.clientY,vx:(Math.random()-.5)*2,vy:(Math.random()-.5)*2,l:40});
+});
+addEventListener('click',e=>{
+ for(let i=0;i<30;i++) parts.push({x:e.clientX,y:e.clientY,vx:(Math.random()-.5)*8,vy:(Math.random()-.5)*8,l:70});
+});
+
+function draw(){
+ ctx.fillStyle="#05010d"; ctx.fillRect(0,0,cv.width,cv.height);
+ let g=ctx.createRadialGradient(cv.width*.5,cv.height*.5,10,cv.width*.5,cv.height*.5,700);
+ g.addColorStop(0,"rgba(120,80,255,.25)"); g.addColorStop(1,"rgba(0,0,0,0)");
+ ctx.fillStyle=g; ctx.fillRect(0,0,cv.width,cv.height);
+
+ ctx.fillStyle="white";
+ stars.forEach(s=>{ctx.fillRect(s.x,s.y,s.s,s.s); s.y+=s.s*.3; if(s.y>cv.height){s.y=0;s.x=Math.random()*cv.width;}});
+
+ for(let i=parts.length-1;i>=0;i--){
+  let p=parts[i];
+  ctx.fillStyle=`rgba(255,215,0,${p.l/70})`;
+  ctx.beginPath(); ctx.arc(p.x,p.y,2,0,7); ctx.fill();
+  p.x+=p.vx; p.y+=p.vy; p.l--;
+  if(p.l<=0) parts.splice(i,1);
+ }
+
+ requestAnimationFrame(draw);
+}
+draw();
+
+const audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+function keySound(){
+ const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+ o.type="square"; o.frequency.value=850; g.gain.value=.01;
+ o.connect(g); g.connect(audioCtx.destination);
+ o.start(); o.stop(audioCtx.currentTime+.03);
+}
+function melody(){
+ [523,659,784,659,523].forEach((f,i)=>{
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.frequency.value=f; g.gain.value=.02;
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(audioCtx.currentTime+i*.18);
+  o.stop(audioCtx.currentTime+i*.18+.2);
+ });
+}
+
+const text=`For Angelica ✨
+
+Halloooooo imut😻
+
+u lagi apa? 
+lagi kerja yaaa,atauu udah pulang?
+
+kalo u lagi kerja 
+
+Semangat kerjanya hari ini ya.
+
+Kalau pekerjaan terasa berat, jangan lupa kalau u sudah sampai sejauh ini karena usaha dan kerja keras u sendiri.
+
+Jangan terlalu memaksakan diri. Istirahat kalau lelah, makan kalau lapar, dan jangan lupa minum yang cukup.
+
+Tidak apa-apa jika hari ini tidak sempurna. Yang penting u tetap melangkah dan memberikan yang terbaik yang u bisa.
+
+Semoga pekerjaan u lancar, kesehatan u selalu terjaga, dan banyak hal baik datang menghampiri u hari ini.
+
+Tetap semangat dan jangan lupa jaga diri ya. 💜✨
+
+Kalo u udah pulang...
+
+Terima kasih karena sudah bertahan dan berjuang sepanjang hari ini. Mungkin hari ini melelahkan, mungkin juga ada banyak hal yang menguras tenaga dan pikiran u.
+
+Tapi sekarang, izinkan diri u buat istirahat.
+
+Simpan dulu semua urusan pekerjaan untuk besok. Malam ini fokus sama diri u sendiri.
+
+Makan yang enak, minum yang cukup, rebahan yang nyaman, lalu tidur yang nyenyak.
+
+U udah melakukan yang terbaik hari ini, dan itu udah lebih dari cukup. ✨
+
+Selamat istirahat, Angelica.
+
+Semoga malam u tenang, tidurnya nyenyak, dan besok bangun dengan semangat baru. 💜🌙
+
+`;
+
+let idx=0;
+function typeIt(){
+ if(idx<text.length){
+   keySound();
+   typed.innerHTML += text[idx++];
+   setTimeout(typeIt,30);
+ } else {
+   end.style.display="inline-block";
+ }
+}
+
+function go(){
+ if(document.getElementById('name').value.trim().toLowerCase()==='angelica'){
+   melody();
+   login.style.display='none';
+   msg.style.display='block';
+   typeIt();
+ } else err.style.display='block';
+}
+
+function showTroll(){
+ troll.style.display='block';
+}
+</script>
+</body>
+</html>
